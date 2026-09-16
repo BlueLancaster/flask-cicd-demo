@@ -15,7 +15,7 @@ def test_home(client):
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.data.decode("utf-8") == "Flask CI/CD Demo - Version 2"
+    assert response.data.decode("utf-8") == "Flask CI/CD Demo - GCP"
 
 
 def test_health(client):
