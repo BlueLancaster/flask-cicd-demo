@@ -36,7 +36,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: pytest
+        run: python -m pytest
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
