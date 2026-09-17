@@ -76,7 +76,19 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }} << EOF
 
-          docker pull ghcr.io/bluelancaster/flask-cicd-demo:${{ github.sha }}
+          set -e
+
+          NEW_IMAGE="ghcr.io/bluelancaster/flask-cicd-demo:${{ github.sha }}"
+
+          echo "Deploying: \$NEW_IMAGE"
+
+          OLD_IMAGE=\$(docker inspect \
+            --format='{{.Config.Image}}' \
+            flask-demo 2>/dev/null || true)
+
+          echo "Current image: \$OLD_IMAGE"
+
+          docker pull "\$NEW_IMAGE"
 
           docker stop flask-demo || true
           docker rm flask-demo || true
@@ -84,11 +96,37 @@ jobs:
           docker run -d \
             --name flask-demo \
             -p 5000:5000 \
-            ghcr.io/bluelancaster/flask-cicd-demo:${{ github.sha }}
+            "\$NEW_IMAGE"
 
           sleep 5
 
-          curl --fail http://localhost:5000/health
+          if curl --fail --silent http://localhost:5000/health > /dev/null; then
+            echo "Deployment successful"
+          else
+            echo "Health check failed"
+
+            docker stop flask-demo || true
+            docker rm flask-demo || true
+
+            if [ -n "\$OLD_IMAGE" ]; then
+              echo "Rolling back to: \$OLD_IMAGE"
+
+              docker run -d \
+                --name flask-demo \
+                -p 5000:5000 \
+                "\$OLD_IMAGE"
+
+              sleep 5
+
+              curl --fail http://localhost:5000/health
+
+              echo "Rollback successful"
+            else
+              echo "No previous image available for rollback"
+            fi
+
+            exit 1
+          fi
 
           EOF
 
