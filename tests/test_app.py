@@ -18,7 +18,7 @@ def test_home(client):
     assert response.data.decode("utf-8") == "Flask CI/CD Demo - GCP"
 
 
-"""
+
 def test_health(client):
     response = client.get("/health")
 
@@ -26,7 +26,7 @@ def test_health(client):
     assert response.get_json() == {
         "status": "ok"
     }
-"""
+
 
 
 def test_get_users(client):
