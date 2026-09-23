@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO users (name)
+SELECT 'Ray'
+WHERE NOT EXISTS (
+    SELECT 1 FROM users WHERE name = 'Ray'
+);
+
+INSERT INTO users (name)
+SELECT 'Allen'
+WHERE NOT EXISTS (
+    SELECT 1 FROM users WHERE name = 'Allen'
+);
